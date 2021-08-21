@@ -15,12 +15,20 @@ def ffmpeg_path
   end
 end
 
+def sanitize_filename(file)
+  file.gsub(%r![/\\?*:|"<>]!, "")
+end
+
 Dotenv.load
 
 raise "usage: #{__FILE__} <user_id>" if ARGV.size != 1
 user_id = ARGV[0]
 
+# TODO: ffmpegの存在をチェック
+
 loop do
+  # TODO: 定期的にAUTH_TOKENの有効性チェック
+
   body = URI.open("#{ENV["API_URL"]}/api/v1/twitter_space/user_id/#{user_id}").read
   stat = JSON.parse(body)
   if !stat["online"]
@@ -37,6 +45,8 @@ loop do
   live_title = stat["live_title"]
 
   time_str = Time.now.strftime("%Y%m%d_%H%M%S")
+  filename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}.aac")
+
   system(
     ffmpeg_path,
     "-hide_banner",
@@ -44,6 +54,6 @@ loop do
     url,
     "-c",
     "copy",
-    "#{screen_name}-#{time_str}-#{space_id}-#{live_title}.aac"
+    filename
   )
 end

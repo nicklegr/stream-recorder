@@ -13,6 +13,10 @@ def ffmpeg_path
   end
 end
 
+def sanitize_filename(file)
+  file.gsub(%r![/\\?*:|"<>]!, "")
+end
+
 Dotenv.load
 
 raise "usage: #{__FILE__} <user_id>" if ARGV.size != 1
@@ -27,6 +31,8 @@ loop do
   end
 
   time_str = Time.now.strftime("%Y%m%d_%H%M%S")
+  filename = sanitize_filename("#{stat["user_name"]}-#{time_str}-live-#{stat["stream_id"]}-#{stat["live_title"]}.mp4")
+
   system(
     ffmpeg_path,
     "-hide_banner",
@@ -38,6 +44,6 @@ loop do
     "copy",
     "-bsf:a",
     "aac_adtstoasc",
-    "#{stat["user_name"]}-#{time_str}-live-#{stat["stream_id"]}-#{stat["live_title"]}.mp4",
+    filename,
   )
 end
