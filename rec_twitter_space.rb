@@ -25,30 +25,35 @@ user_id = ARGV[0]
 # TODO: ffmpegの存在をチェック
 
 loop do
-  # TODO: 定期的にAUTH_TOKENの有効性チェック
+  begin
+    # TODO: 定期的にAUTH_TOKENの有効性チェック
 
-  body = URI.open("#{ENV["API_URL"]}/api/v1/twitter_space/user_id/#{user_id}").read
-  stat = JSON.parse(body)
-  if !stat["online"]
+    body = URI.open("#{ENV["API_URL"]}/api/v1/twitter_space/user_id/#{user_id}").read
+    stat = JSON.parse(body)
+    if !stat["online"]
+      sleep(60)
+      next
+    end
+
+    url = stat["stream_url"]
+    screen_name = stat["screen_name"]
+    space_id = stat["space_id"]
+    live_title = stat["live_title"]
+
+    time_str = Time.now.strftime("%Y%m%d_%H%M%S")
+    filename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}.aac")
+
+    system(
+      ffmpeg_path,
+      "-hide_banner",
+      "-i",
+      url,
+      "-c",
+      "copy",
+      filename
+    )
+  rescue => e
+    puts e.message
     sleep(60)
-    next
   end
-
-  url = stat["stream_url"]
-  screen_name = stat["screen_name"]
-  space_id = stat["space_id"]
-  live_title = stat["live_title"]
-
-  time_str = Time.now.strftime("%Y%m%d_%H%M%S")
-  filename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}.aac")
-
-  system(
-    ffmpeg_path,
-    "-hide_banner",
-    "-i",
-    url,
-    "-c",
-    "copy",
-    filename
-  )
 end
