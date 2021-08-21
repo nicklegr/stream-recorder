@@ -4,8 +4,6 @@ require "time"
 require "json"
 require "open-uri"
 require "dotenv"
-require_relative "https"
-require_relative "twitter_space"
 
 def ffmpeg_path
   if RUBY_PLATFORM == "x64-mingw32"
@@ -36,10 +34,7 @@ loop do
     next
   end
 
-  space = TwitterSpace.new
-  token = space.guest_token()
-  stream = space.live_video_stream(token, stat["media_key"])
-  url = stream["source"]["location"]
+  url = stat["stream_url"]
   screen_name = stat["screen_name"]
   space_id = stat["space_id"]
   live_title = stat["live_title"]
