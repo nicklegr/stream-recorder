@@ -48,7 +48,7 @@ Dotenv.load
 
 option = Option.new
 
-raise "usage: #{__FILE__} <list_ids>" if !option.list_ids
+raise "usage: #{__FILE__} --list_ids=<list_ids> [--except_user_ids=<except_user_ids>]" if !option.list_ids
 
 # TODO: ffmpegの存在をチェック
 
