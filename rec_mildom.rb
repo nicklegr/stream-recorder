@@ -37,6 +37,8 @@ loop do
     system(
       ffmpeg_path,
       "-hide_banner",
+      "-loglevel",
+      "warning",
       "-headers",
       "Referer: https://www.mildom.com/",
       "-i",

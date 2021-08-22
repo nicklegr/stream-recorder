@@ -46,6 +46,8 @@ loop do
     system(
       ffmpeg_path,
       "-hide_banner",
+      "-loglevel",
+      "warning",
       "-i",
       url,
       "-c",
