@@ -39,10 +39,23 @@ loop do
     screen_name = stat["screen_name"]
     space_id = stat["space_id"]
     live_title = stat["live_title"]
+    chat_access_token = stat["chat_access_token"]
 
     time_str = Time.now.strftime("%Y%m%d_%H%M%S")
-    filename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}.aac")
 
+    chat_file_basename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}")
+
+    recorder_pid = spawn(
+      "node",
+      "twitter_space_chat_record.js",
+      chat_file_basename,
+      space_id,
+      chat_access_token
+    )
+    Process.detach(recorder_pid)
+
+    audio_filename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}.aac")
+    puts "recording audio '#{audio_filename}'"
     system(
       ffmpeg_path,
       "-hide_banner",
@@ -52,7 +65,7 @@ loop do
       url,
       "-c",
       "copy",
-      filename
+      audio_filename
     )
   rescue => e
     puts e.message
