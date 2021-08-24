@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "date-utils": "^1.2.21",
+    "websocket": "^1.0.34",
+    "ws": "^8.2.0"
+  }
+}
