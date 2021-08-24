@@ -73,7 +73,7 @@ loop do
 # puts body
     stats = JSON.parse(body)
     if stats.empty?
-      sleep(60)
+      sleep(120)
       next
     end
 
@@ -114,6 +114,6 @@ loop do
     )
   rescue => e
     puts e.message
-    sleep(60)
+    sleep(120)
   end
 end

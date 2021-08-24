@@ -31,7 +31,7 @@ loop do
     body = URI.open("#{ENV["API_URL"]}/api/v1/twitter_space/user_id/#{user_id}").read
     stat = JSON.parse(body)
     if !stat["online"]
-      sleep(60)
+      sleep(120)
       next
     end
 
@@ -69,6 +69,6 @@ loop do
     )
   rescue => e
     puts e.message
-    sleep(60)
+    sleep(120)
   end
 end
