@@ -187,29 +187,13 @@ class TwitterSpace
     get_json("https://proxsee.pscp.tv/api/v2/stopPublic", header, param)
   end
 
-  def access_chat(user_id_cookie, cookie, chat_token)
-    header = {
-      # "content-type" => "application/json",
-      # "Origin" => "https://twitter.com",
-      # "Referer" => "https://twitter.com/",
-      # "sec-ch-ua" => '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
-      # "sec-ch-ua-mobile" => "?0",
-      # # "X-Attempt" => "1",
-      # # "X-Idempotence" => "1629807912170",
-      # "X-Periscope-User-Agent" => "Twitter/m5",
-      # "Sec-Fetch-Dest" => "empty",
-      # "Sec-Fetch-Mode" => "cors",
-      # "Sec-Fetch-Site" => "cross-site",
-
-      # "Cookie" => user_id_cookie, # いらないようだ
-    }
-
+  def access_chat(cookie, chat_token)
     body = {
       "chat_token" => chat_token,
       "cookie" => cookie,
     }.to_json
 
-    post_json("https://proxsee.pscp.tv/api/v2/accessChat", header, {}, body)
+    post_json("https://proxsee.pscp.tv/api/v2/accessChat", {}, {}, body)
   end
 end
 
@@ -251,23 +235,21 @@ if $0 == __FILE__
   stream = space.live_video_stream(token, media_key)
 # pp stream
   url = stream["source"]["location"]
-  puts "url: #{url}"
+  puts "stream_url: #{url}"
+  puts "chat_token: #{stream["chatToken"]}"
 
   periscope = space.authenticate_periscope(token)
   puts "periscope_token: #{periscope["token"]}"
 
   periscope_cookie = space.periscope_login(periscope["token"])
-pp periscope_cookie
+  puts "periscope_cookie: #{periscope_cookie["cookie"]}"
 
-  ret = space.start_public(token, stream["lifecycleToken"])
-pp ret
-user_id_cookie, session = ret
+#   ret = space.start_public(token, stream["lifecycleToken"])
+# pp ret
+# user_id_cookie, session = ret
 
-  space.stop_public(token, user_id_cookie, session)
+#   space.stop_public(token, user_id_cookie, session)
 
-# puts "cookie: #{periscope_cookie["cookie"]}"
-# puts "chatToken: #{stream["chatToken"]}"
-  chat = space.access_chat(user_id_cookie, periscope_cookie["cookie"], stream["chatToken"])
-pp chat
-
+  chat = space.access_chat(periscope_cookie["cookie"], stream["chatToken"])
+  puts "chat_access_token: #{chat["access_token"]}"
 end
