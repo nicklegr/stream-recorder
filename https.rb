@@ -49,4 +49,22 @@ class Https
       res.value
     end
   end
+
+  def self.get_ret_header(url, header, params = {}, body = "")
+    uri = URI(url)
+    uri.query = URI.encode_www_form(params)
+
+    net = Net::HTTP.new(uri.hostname, uri.port)
+    net.use_ssl = (uri.scheme == "https")
+    # net.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    net.start() do |http|
+      req = Net::HTTP::Get.new(uri, header)
+      req["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0"
+      req.body = body
+      res = http.request(req)
+      res.value # raise exception if failed
+
+      res
+    end
+  end
 end

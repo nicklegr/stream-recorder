@@ -9,14 +9,14 @@ require_relative "https"
 Dotenv.load
 
 class TwitterSpace
-  def get_json(url, header, params = {})
-    body = Https.get(url, header, params)
-    JSON.parse(body)
+  def get_json(url, header, params = {}, body = "")
+    res = Https.get(url, header, params, body)
+    JSON.parse(res)
   end
 
-  def post_json(url, header, params = {})
-    body = Https.post(url, header, params)
-    JSON.parse(body)
+  def post_json(url, header, params = {}, body = "")
+    res = Https.post(url, header, params, body)
+    JSON.parse(res)
   end
 
   def common_header(guest_token)
@@ -125,6 +125,92 @@ class TwitterSpace
 
     get_json("https://twitter.com/i/api/1.1/live_video_stream/status/#{media_key}", header, params)
   end
+
+  def authenticate_periscope(guest_token)
+    auth_token = ENV["AUTH_TOKEN"]
+    ct0 = ENV["CT0"]
+
+    header = common_header(guest_token).merge({
+      "Cookie" => [
+        "auth_token=#{auth_token}",
+        "ct0=#{ct0}",
+      ].join(";"),
+      "x-csrf-token" => ct0,
+      "x-twitter-auth-type" => "OAuth2Session",
+    })
+
+    get_json("https://twitter.com/i/api/1.1/oauth/authenticate_periscope.json", header)
+  end
+
+  def periscope_login(twitter_token)
+    body = {
+      "create_user" => false,
+      "direct" => true,
+      "jwt" => twitter_token,
+      "vendor_id" => "m5-proxsee-login-a2011357b73e",
+    }.to_json
+
+    post_json("https://proxsee.pscp.tv/api/v2/loginTwitterToken", {}, {}, body)
+  end
+
+  def start_public(guest_token, life_cycle_token)
+    header = common_header(guest_token)
+
+    param = {
+      "life_cycle_token" => life_cycle_token,
+      "auto_play" => true,
+    }
+
+    res = Https.get_ret_header("https://proxsee.pscp.tv/api/v2/startPublic", header, param)
+    res["Set-Cookie"].match(/^(.+?);/)
+    user_id_cookie = $1
+
+    [
+      user_id_cookie,
+      JSON.parse(res.body)["session"]
+    ]
+  end
+
+  def stop_public(guest_token, user_id_cookie, session)
+    ct0 = ENV["CT0"]
+
+    header = common_header(guest_token).merge({
+      "Cookie" => user_id_cookie,
+      "x-csrf-token" => ct0,
+      "x-twitter-auth-type" => "OAuth2Session",
+    })
+
+    param = {
+      "session" => session,
+    }
+
+    get_json("https://proxsee.pscp.tv/api/v2/stopPublic", header, param)
+  end
+
+  def access_chat(user_id_cookie, cookie, chat_token)
+    header = {
+      # "content-type" => "application/json",
+      # "Origin" => "https://twitter.com",
+      # "Referer" => "https://twitter.com/",
+      # "sec-ch-ua" => '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
+      # "sec-ch-ua-mobile" => "?0",
+      # # "X-Attempt" => "1",
+      # # "X-Idempotence" => "1629807912170",
+      # "X-Periscope-User-Agent" => "Twitter/m5",
+      # "Sec-Fetch-Dest" => "empty",
+      # "Sec-Fetch-Mode" => "cors",
+      # "Sec-Fetch-Site" => "cross-site",
+
+      # "Cookie" => user_id_cookie, # いらないようだ
+    }
+
+    body = {
+      "chat_token" => chat_token,
+      "cookie" => cookie,
+    }.to_json
+
+    post_json("https://proxsee.pscp.tv/api/v2/accessChat", header, {}, body)
+  end
 end
 
 if $0 == __FILE__
@@ -166,4 +252,22 @@ if $0 == __FILE__
 # pp stream
   url = stream["source"]["location"]
   puts "url: #{url}"
+
+  periscope = space.authenticate_periscope(token)
+  puts "periscope_token: #{periscope["token"]}"
+
+  periscope_cookie = space.periscope_login(periscope["token"])
+pp periscope_cookie
+
+  ret = space.start_public(token, stream["lifecycleToken"])
+pp ret
+user_id_cookie, session = ret
+
+  space.stop_public(token, user_id_cookie, session)
+
+# puts "cookie: #{periscope_cookie["cookie"]}"
+# puts "chatToken: #{stream["chatToken"]}"
+  chat = space.access_chat(user_id_cookie, periscope_cookie["cookie"], stream["chatToken"])
+pp chat
+
 end
