@@ -34,6 +34,7 @@ loop do
     time_str = Time.now.strftime("%Y%m%d_%H%M%S")
     filename = sanitize_filename("#{stat["user_name"]}-#{time_str}-live-#{stat["stream_id"]}-#{stat["live_title"]}.mp4")
 
+    puts "recording stream '#{filename}'"
     system(
       ffmpeg_path,
       "-hide_banner",
@@ -49,6 +50,7 @@ loop do
       "aac_adtstoasc",
       filename,
     )
+    puts "stream ended"
   rescue => e
     puts e.message
     sleep(60)
