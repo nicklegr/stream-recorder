@@ -112,6 +112,7 @@ loop do
       "copy",
       audio_filename
     )
+    puts "recording ended"
   rescue => e
     puts e.message
     sleep(120)
