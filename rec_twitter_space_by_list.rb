@@ -81,56 +81,57 @@ loop do
     end
 
     puts "online_users: #{stats.map{|e| e["screen_name"]}.join(", ")}"
-    rec_stat = stats.first
 
-    url = rec_stat["stream_url"]
-    screen_name = rec_stat["screen_name"]
-    space_id = rec_stat["space_id"]
-    live_title = rec_stat["live_title"]
-    chat_access_token = rec_stat["chat_access_token"]
+    stats.each do |stat|
+      url = stat["stream_url"]
+      screen_name = stat["screen_name"]
+      space_id = stat["space_id"]
+      live_title = stat["live_title"]
+      chat_access_token = stat["chat_access_token"]
 
-    time_str = Time.now.strftime("%Y%m%d_%H%M%S")
+      time_str = Time.now.strftime("%Y%m%d_%H%M%S")
 
-    watcher = pid_watchers.dig(space_id, "chat")
-    if !watcher || !watcher.status
-      chat_file_basename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}")
-      puts "recording chat '#{chat_file_basename}'"
+      watcher = pid_watchers.dig(space_id, "chat")
+      if !watcher || !watcher.status
+        chat_file_basename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}")
+        puts "recording chat '#{chat_file_basename}'"
 
-      chat_recorder_pid = spawn(
-        "node",
-        "twitter_space_chat_record.js",
-        chat_file_basename,
-        space_id,
-        chat_access_token
-      )
+        chat_recorder_pid = spawn(
+          "node",
+          "twitter_space_chat_record.js",
+          chat_file_basename,
+          space_id,
+          chat_access_token
+        )
 
-      recording_pids[space_id]["chat"] = chat_recorder_pid
-      pid_watchers[space_id]["chat"] = Process.detach(chat_recorder_pid)
-    else
-      puts "already recording chat"
-    end
+        recording_pids[space_id]["chat"] = chat_recorder_pid
+        pid_watchers[space_id]["chat"] = Process.detach(chat_recorder_pid)
+      else
+        puts "already recording chat"
+      end
 
-    watcher = pid_watchers.dig(space_id, "audio")
-    if !watcher || !watcher.status
-      audio_filename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}.aac")
-      puts "recording audio '#{audio_filename}'"
+      watcher = pid_watchers.dig(space_id, "audio")
+      if !watcher || !watcher.status
+        audio_filename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}.aac")
+        puts "recording audio '#{audio_filename}'"
 
-      audio_recorder_pid = spawn(
-        ffmpeg_path,
-        "-hide_banner",
-        "-loglevel",
-        "warning",
-        "-i",
-        url,
-        "-c",
-        "copy",
-        audio_filename
-      )
+        audio_recorder_pid = spawn(
+          ffmpeg_path,
+          "-hide_banner",
+          "-loglevel",
+          "warning",
+          "-i",
+          url,
+          "-c",
+          "copy",
+          audio_filename
+        )
 
-      recording_pids[space_id]["audio"] = audio_recorder_pid
-      pid_watchers[space_id]["audio"] = Process.detach(audio_recorder_pid)
-    else
-      puts "already recording audio"
+        recording_pids[space_id]["audio"] = audio_recorder_pid
+        pid_watchers[space_id]["audio"] = Process.detach(audio_recorder_pid)
+      else
+        puts "already recording audio"
+      end
     end
 
     pp recording_pids
