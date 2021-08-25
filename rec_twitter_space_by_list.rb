@@ -8,6 +8,8 @@ require "optparse"
 require "twitter"
 require_relative "https"
 
+SLEEP_SEC = 120
+
 def ffmpeg_path
   if RUBY_PLATFORM == "x64-mingw32"
     "ffmpeg.exe"
@@ -76,7 +78,7 @@ loop do
 # puts body
     stats = JSON.parse(body)
     if stats.empty?
-      sleep(120)
+      sleep(SLEEP_SEC)
       next
     end
 
@@ -136,11 +138,10 @@ loop do
 
     pp recording_pids
     pp pid_watchers
-
-    sleep(120)
   rescue => e
     puts e.message
     puts e.backtrace
-    sleep(120)
   end
+
+  sleep(SLEEP_SEC)
 end
