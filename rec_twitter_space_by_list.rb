@@ -52,6 +52,9 @@ raise "usage: #{__FILE__} --list_ids=<list_ids> [--except_user_ids=<except_user_
 
 # TODO: ffmpegの存在をチェック
 
+recording_pids = Hash.new {|hash, key| hash[key] = Hash.new}
+pid_watchers = Hash.new {|hash, key| hash[key] = Hash.new}
+
 loop do
   begin
     # TODO: 定期的にAUTH_TOKENの有効性チェック
@@ -88,33 +91,55 @@ loop do
 
     time_str = Time.now.strftime("%Y%m%d_%H%M%S")
 
-    chat_file_basename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}")
+    watcher = pid_watchers.dig(space_id, "chat")
+    if !watcher || !watcher.status
+      chat_file_basename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}")
+      puts "recording chat '#{chat_file_basename}'"
 
-    recorder_pid = spawn(
-      "node",
-      "twitter_space_chat_record.js",
-      chat_file_basename,
-      space_id,
-      chat_access_token
-    )
-    Process.detach(recorder_pid)
+      chat_recorder_pid = spawn(
+        "node",
+        "twitter_space_chat_record.js",
+        chat_file_basename,
+        space_id,
+        chat_access_token
+      )
 
-    audio_filename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}.aac")
-    puts "recording audio '#{audio_filename}'"
-    system(
-      ffmpeg_path,
-      "-hide_banner",
-      "-loglevel",
-      "warning",
-      "-i",
-      url,
-      "-c",
-      "copy",
-      audio_filename
-    )
-    puts "recording ended"
+      recording_pids[space_id]["chat"] = chat_recorder_pid
+      pid_watchers[space_id]["chat"] = Process.detach(chat_recorder_pid)
+    else
+      puts "already recording chat"
+    end
+
+    watcher = pid_watchers.dig(space_id, "audio")
+    if !watcher || !watcher.status
+      audio_filename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}.aac")
+      puts "recording audio '#{audio_filename}'"
+
+      audio_recorder_pid = spawn(
+        ffmpeg_path,
+        "-hide_banner",
+        "-loglevel",
+        "warning",
+        "-i",
+        url,
+        "-c",
+        "copy",
+        audio_filename
+      )
+
+      recording_pids[space_id]["audio"] = audio_recorder_pid
+      pid_watchers[space_id]["audio"] = Process.detach(audio_recorder_pid)
+    else
+      puts "already recording audio"
+    end
+
+    pp recording_pids
+    pp pid_watchers
+
+    sleep(120)
   rescue => e
     puts e.message
+    puts e.backtrace
     sleep(120)
   end
 end
