@@ -78,10 +78,12 @@ loop do
 # puts body
     stats = JSON.parse(body)
     if stats.empty?
+      print(".")
       sleep(SLEEP_SEC)
       next
     end
 
+    puts ""
     puts "online_users: #{stats.map{|e| e["screen_name"]}.join(", ")}"
 
     stats.each do |stat|
