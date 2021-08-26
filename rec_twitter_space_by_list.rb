@@ -8,7 +8,7 @@ require "optparse"
 require "twitter"
 require_relative "https"
 
-SLEEP_SEC = 120
+SLEEP_SEC = 60
 
 def ffmpeg_path
   if RUBY_PLATFORM == "x64-mingw32"
