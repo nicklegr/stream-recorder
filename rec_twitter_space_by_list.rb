@@ -6,6 +6,7 @@ require "open-uri"
 require "dotenv"
 require "optparse"
 require "twitter"
+require "fileutils"
 require_relative "https"
 
 SLEEP_SEC = 60
@@ -97,11 +98,13 @@ loop do
       live_title = stat["live_title"]
       chat_access_token = stat["chat_access_token"]
 
+      dir = "space/#{screen_name}"
+      FileUtils.mkdir_p(dir)
       time_str = Time.now.strftime("%Y%m%d_%H%M%S")
 
       watcher = pid_watchers.dig(space_id, "chat")
       if !watcher || !watcher.status
-        chat_file_basename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}")
+        chat_file_basename = "#{dir}/" + sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}")
         puts "recording chat '#{chat_file_basename}'"
 
         chat_recorder_pid = spawn(
@@ -120,7 +123,7 @@ loop do
 
       watcher = pid_watchers.dig(space_id, "audio")
       if !watcher || !watcher.status
-        audio_filename = sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}.aac")
+        audio_filename = "#{dir}/" + sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}.aac")
         puts "recording audio '#{audio_filename}'"
 
         audio_recorder_pid = spawn(
