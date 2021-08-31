@@ -84,6 +84,10 @@ loop do
     end
 
     puts ""
+
+    pp recording_pids
+    pp pid_watchers
+
     puts "online_users: #{stats.map{|e| e["screen_name"]}.join(", ")}"
 
     stats.each do |stat|
@@ -111,7 +115,7 @@ loop do
         recording_pids[space_id]["chat"] = chat_recorder_pid
         pid_watchers[space_id]["chat"] = Process.detach(chat_recorder_pid)
       else
-        puts "already recording chat"
+        puts "already recording chat: #{screen_name} (#{space_id})"
       end
 
       watcher = pid_watchers.dig(space_id, "audio")
@@ -134,12 +138,9 @@ loop do
         recording_pids[space_id]["audio"] = audio_recorder_pid
         pid_watchers[space_id]["audio"] = Process.detach(audio_recorder_pid)
       else
-        puts "already recording audio"
+        puts "already recording audio: #{screen_name} (#{space_id})"
       end
     end
-
-    pp recording_pids
-    pp pid_watchers
   rescue => e
     puts e.message
     puts e.backtrace
