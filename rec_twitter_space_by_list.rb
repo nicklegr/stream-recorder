@@ -37,21 +37,25 @@ class Option
   def initialize
     opt = OptionParser.new
 
+    @rec_dir_name = "space"
+
     opt.on("--list_ids=[list_ids]") {|v| @list_ids = v.split(",") }
     opt.on("--except_user_ids=[except_user_ids]") {|v| @except_user_ids = v.split(",") }
+    opt.on("--rec_dir_name=[name]") {|v| @rec_dir_name = v }
 
     opt.parse!(ARGV)
   end
 
   attr_reader :list_ids
   attr_reader :except_user_ids
+  attr_reader :rec_dir_name
 end
 
 Dotenv.load
 
 option = Option.new
 
-raise "usage: #{__FILE__} --list_ids=<list_ids> [--except_user_ids=<except_user_ids>]" if !option.list_ids
+raise "usage: #{__FILE__} --list_ids=<list_ids> [--except_user_ids=<except_user_ids>] [--rec_dir_name=<name>]" if !option.list_ids
 
 # TODO: ffmpegの存在をチェック
 
@@ -98,7 +102,7 @@ loop do
       live_title = stat["live_title"]
       chat_access_token = stat["chat_access_token"]
 
-      dir = "space/#{screen_name}"
+      dir = "#{option.rec_dir_name}/#{screen_name}"
       FileUtils.mkdir_p(dir)
       time_str = Time.now.strftime("%Y%m%d_%H%M%S")
 
