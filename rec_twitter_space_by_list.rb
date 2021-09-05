@@ -90,8 +90,8 @@ loop do
 
     puts ""
 
-    pp recording_pids
-    pp pid_watchers
+    # pp recording_pids
+    # pp pid_watchers
 
     puts "online_users: #{stats.map{|e| e["screen_name"]}.join(", ")}"
 
