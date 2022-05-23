@@ -14,7 +14,7 @@ def ffmpeg_path
 end
 
 def sanitize_filename(file)
-  file.gsub(%r![/\\?*:|"<>]!, "")
+  file.gsub(%r![/\\?*:|"<>\n]!, "")
 end
 
 Dotenv.load
