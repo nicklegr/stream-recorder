@@ -53,6 +53,7 @@ loop do
     puts "stream ended"
   rescue => e
     puts e.message
-    sleep(60)
   end
+
+  sleep(60)
 end
