@@ -35,7 +35,7 @@ loop do
     dir = "mildom/#{user_id}"
     FileUtils.mkdir_p(dir)
     time_str = Time.now.strftime("%Y%m%d_%H%M%S")
-    filename = "#{dir}/" + sanitize_filename("#{stat["user_name"]}-#{time_str}-live-#{stat["stream_id"]}-#{stat["live_title"]}.mp4")
+    filename = "#{dir}/" + sanitize_filename("#{stat["user_name"]}-#{time_str}-live-#{stat["stream_id"]}-#{stat["live_title"]}.ts")
 
     puts "recording stream '#{filename}'"
     system(
@@ -49,8 +49,6 @@ loop do
       "https://do8w5ym3okkik.cloudfront.net/live/#{user_id}.m3u8",
       "-c",
       "copy",
-      "-bsf:a",
-      "aac_adtstoasc",
       filename,
     )
     puts "stream ended"
