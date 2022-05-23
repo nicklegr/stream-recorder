@@ -4,6 +4,7 @@ require "time"
 require "json"
 require "open-uri"
 require "dotenv"
+require "fileutils"
 
 def ffmpeg_path
   if RUBY_PLATFORM == "x64-mingw32"
@@ -31,8 +32,10 @@ loop do
       next
     end
 
+    dir = "mildom/#{user_id}"
+    FileUtils.mkdir_p(dir)
     time_str = Time.now.strftime("%Y%m%d_%H%M%S")
-    filename = sanitize_filename("#{stat["user_name"]}-#{time_str}-live-#{stat["stream_id"]}-#{stat["live_title"]}.mp4")
+    filename = "#{dir}/" + sanitize_filename("#{stat["user_name"]}-#{time_str}-live-#{stat["stream_id"]}-#{stat["live_title"]}.mp4")
 
     puts "recording stream '#{filename}'"
     system(
