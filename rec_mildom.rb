@@ -52,8 +52,13 @@ loop do
       filename,
     )
     puts "stream ended"
+  rescue Net::HTTPExceptions => e
+    puts e.message
+    puts e.response.body
+    puts e.backtrace
   rescue => e
     puts e.message
+    puts e.backtrace
   end
 
   sleep(60)

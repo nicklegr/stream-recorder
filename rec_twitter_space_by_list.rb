@@ -148,6 +148,10 @@ loop do
         puts "already recording audio: #{screen_name} (#{space_id})"
       end
     end
+  rescue Net::HTTPExceptions => e
+    puts e.message
+    puts e.response.body
+    puts e.backtrace
   rescue => e
     puts e.message
     puts e.backtrace
