@@ -35,7 +35,20 @@ loop do
     dir = "spoon/@#{stat["screen_name"]}-#{user_id}"
     FileUtils.mkdir_p(dir)
     time_str = Time.now.strftime("%Y%m%d_%H%M%S")
-    filename = "#{dir}/" + sanitize_filename("#{time_str}-#{stat["nickname"]}-live-#{stat["stream_id"]}-#{stat["live_title"]}.ts")
+    filename_base = sanitize_filename("#{time_str}-#{stat["nickname"]}-live-#{stat["stream_id"]}-#{stat["live_title"]}")
+
+    # サムネイル保存
+    begin
+      filename = "#{dir}/#{filename_base}.jpg"
+      File.binwrite(
+        filename,
+        URI.open(stat["img_url"]).read)
+    rescue
+      # 保存失敗しても続行
+    end
+
+    # ストリーム保存
+    filename = "#{dir}/#{filename_base}.ts"
 
     puts "recording stream '#{filename}'"
     system(
