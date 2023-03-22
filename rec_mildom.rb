@@ -28,6 +28,7 @@ loop do
     body = URI.open("#{ENV["API_URL"]}/api/v1/mildom/#{user_id}").read
     stat = JSON.parse(body)
     if !stat["online"]
+      print(".")
       sleep(60)
       next
     end
