@@ -5,7 +5,6 @@ require "json"
 require "open-uri"
 require "dotenv"
 require "optparse"
-require "twitter"
 require "fileutils"
 require_relative "https"
 
@@ -23,30 +22,20 @@ def sanitize_filename(file)
   file.gsub(%r![/\\?*:|"<>]!, "")
 end
 
-def twitter_client
-  client = Twitter::REST::Client.new do |config|
-    config.consumer_key = ENV["CONSUMER_KEY"]
-    config.consumer_secret = ENV["CONSUMER_SECRET"]
-    config.access_token = ENV["OAUTH_TOKEN"]
-    config.access_token_secret = ENV["OAUTH_TOKEN_SECRET"]
-  end
-  client
-end
-
 class Option
   def initialize
     opt = OptionParser.new
 
     @rec_dir_name = "space"
 
-    opt.on("--list_ids=[list_ids]") {|v| @list_ids = v.split(",") }
+    opt.on("--users_json=[filename]") {|v| @users_json = v }
     opt.on("--except_user_ids=[except_user_ids]") {|v| @except_user_ids = v.split(",") }
     opt.on("--rec_dir_name=[name]") {|v| @rec_dir_name = v }
 
     opt.parse!(ARGV)
   end
 
-  attr_reader :list_ids
+  attr_reader :users_json
   attr_reader :except_user_ids
   attr_reader :rec_dir_name
 end
@@ -55,7 +44,7 @@ Dotenv.load
 
 option = Option.new
 
-raise "usage: #{__FILE__} --list_ids=<list_ids> [--except_user_ids=<except_user_ids>] [--rec_dir_name=<name>]" if !option.list_ids
+raise "usage: #{__FILE__} --users_json=<filename> [--except_user_ids=<except_user_ids>] [--rec_dir_name=<name>]" if !option.users_json
 
 # TODO: ffmpegの存在をチェック
 
@@ -67,10 +56,9 @@ loop do
     # TODO: 定期的にAUTH_TOKENの有効性チェック
 
     user_ids = []
-    client = twitter_client
-    option.list_ids.each do |list_id|
-      user_ids += client.list_members(list_id.to_i, { count: 5000 }).map{|e| e.id.to_s}
-    end
+    users_data = JSON.parse(File.read(option.users_json))
+    user_ids += users_data.map{|e| e["id_str"]}
+
     if option.except_user_ids
       user_ids -= option.except_user_ids
     end
