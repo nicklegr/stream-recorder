@@ -10,7 +10,7 @@ services:
     volumes:
       - $SPOON_OUTPUT_DIR:/output
 
-  k1105:
+  spoon_k1105:
     build: .
     command: bundle exec ruby rec_spoon.rb 315315671 # @k___.1105
     environment:
@@ -19,7 +19,7 @@ services:
     volumes:
       - $SPOON_OUTPUT_DIR:/output
 
-  kurotan333:
+  spoon_kurotan333:
     build: .
     command: bundle exec ruby rec_spoon.rb 313974384 # @kurotan333
     environment:
