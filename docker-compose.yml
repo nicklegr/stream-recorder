@@ -13,6 +13,7 @@ services:
     volumes:
       - $TWITTER_SPACE_OUTPUT_DIR:/output
       - ./conf:/conf:ro
+    user: "1000:1000"
 
   spoon_shushu_shu:
     build: .
@@ -22,6 +23,7 @@ services:
     restart: unless-stopped
     volumes:
       - $SPOON_OUTPUT_DIR:/output
+    user: "1000:1000"
 
   spoon_k1105:
     build: .
@@ -31,6 +33,7 @@ services:
     restart: unless-stopped
     volumes:
       - $SPOON_OUTPUT_DIR:/output
+    user: "1000:1000"
 
   spoon_kurotan333:
     build: .
@@ -40,3 +43,4 @@ services:
     restart: unless-stopped
     volumes:
       - $SPOON_OUTPUT_DIR:/output
+    user: "1000:1000"
