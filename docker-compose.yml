@@ -1,6 +1,19 @@
 version: "2"
 
 services:
+  twitter_space:
+    build: .
+    command: bundle exec ruby rec_twitter_space_by_list.rb --users_yaml=/conf/list_rec_space.yml --rec_dir_name=/output/rec_space
+    environment:
+      API_URL: $API_URL
+      TWITTER_PUBLIC_TOKEN: $TWITTER_PUBLIC_TOKEN
+      AUTH_TOKEN: $AUTH_TOKEN
+      CT0: $CT0
+    restart: unless-stopped
+    volumes:
+      - $TWITTER_SPACE_OUTPUT_DIR:/output
+      - ./conf:/conf:ro
+
   spoon_shushu_shu:
     build: .
     command: bundle exec ruby rec_spoon.rb 314949026 # @shushu_shu
