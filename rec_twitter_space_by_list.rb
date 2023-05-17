@@ -41,6 +41,7 @@ class Option
   attr_reader :rec_dir_name
 end
 
+$stdout.sync = true
 Dotenv.load
 
 option = Option.new
