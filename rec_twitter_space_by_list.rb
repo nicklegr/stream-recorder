@@ -2,6 +2,7 @@
 
 require "time"
 require "json"
+require "yaml"
 require "open-uri"
 require "dotenv"
 require "optparse"
@@ -28,14 +29,14 @@ class Option
 
     @rec_dir_name = "space"
 
-    opt.on("--users_json=[filename]") {|v| @users_json = v }
+    opt.on("--users_yaml=[filename]") {|v| @users_yaml = v }
     opt.on("--except_user_ids=[except_user_ids]") {|v| @except_user_ids = v.split(",") }
     opt.on("--rec_dir_name=[name]") {|v| @rec_dir_name = v }
 
     opt.parse!(ARGV)
   end
 
-  attr_reader :users_json
+  attr_reader :users_yaml
   attr_reader :except_user_ids
   attr_reader :rec_dir_name
 end
@@ -44,7 +45,7 @@ Dotenv.load
 
 option = Option.new
 
-raise "usage: #{__FILE__} --users_json=<filename> [--except_user_ids=<except_user_ids>] [--rec_dir_name=<name>]" if !option.users_json
+raise "usage: #{__FILE__} --users_yaml=<filename> [--except_user_ids=<except_user_ids>] [--rec_dir_name=<name>]" if !option.users_yaml
 
 # TODO: ffmpegの存在をチェック
 
@@ -56,8 +57,8 @@ loop do
     # TODO: 定期的にAUTH_TOKENの有効性チェック
 
     user_ids = []
-    users_data = JSON.parse(File.read(option.users_json))
-    user_ids += users_data.map{|e| e["id_str"]}
+    users_data = YAML.load_file(option.users_yaml)
+    user_ids += users_data
 
     if option.except_user_ids
       user_ids -= option.except_user_ids
