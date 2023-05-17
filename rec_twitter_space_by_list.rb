@@ -72,7 +72,6 @@ loop do
 # puts body
     stats = JSON.parse(body)
     if stats.empty?
-      print(".")
       sleep(SLEEP_SEC)
       next
     end
