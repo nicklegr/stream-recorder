@@ -87,17 +87,18 @@ loop do
     stats.each do |stat|
       url = stat["stream_url"]
       screen_name = stat["screen_name"]
+      user_id = stat["user_id"]
       space_id = stat["space_id"]
       live_title = stat["live_title"]
       chat_access_token = stat["chat_access_token"]
 
-      dir = "#{option.rec_dir_name}/#{screen_name}"
+      dir = "#{option.rec_dir_name}/#{screen_name}-#{user_id}"
       FileUtils.mkdir_p(dir)
       time_str = Time.now.strftime("%Y%m%d_%H%M%S")
 
       watcher = pid_watchers.dig(space_id, "chat")
       if !watcher || !watcher.status
-        chat_file_basename = "#{dir}/" + sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}")
+        chat_file_basename = "#{dir}/" + sanitize_filename("#{time_str}-#{space_id}-#{live_title}")
         puts "recording chat '#{chat_file_basename}'"
 
         chat_recorder_pid = spawn(
@@ -116,7 +117,7 @@ loop do
 
       watcher = pid_watchers.dig(space_id, "audio")
       if !watcher || !watcher.status
-        audio_filename = "#{dir}/" + sanitize_filename("#{screen_name}-#{time_str}-#{space_id}-#{live_title}.aac")
+        audio_filename = "#{dir}/" + sanitize_filename("#{time_str}-#{space_id}-#{live_title}.aac")
         puts "recording audio '#{audio_filename}'"
 
         audio_recorder_pid = spawn(
